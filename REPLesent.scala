@@ -402,6 +402,7 @@ case class REPLesent(
 
   private def parse(lines: Iterator[String]): IndexedSeq[Slide] = {
     sealed trait Flags
+    case object NoExec extends Flags
 
     sealed trait LineHandler {
       def switch(flags: Seq[Flags]): LineHandler
@@ -471,7 +472,7 @@ case class REPLesent(
             .getOrElse(line)
         })
 
-        (Line("< " + formatted), Option(line))
+        (Line("< " + formatted), Option(line).filterNot(_ => flags.contains(NoExec)))
       }
     }
 
@@ -513,11 +514,13 @@ case class REPLesent(
     val slideSeparator = "---"
     val buildSeparator = "--"
     val codeDelimiter = "```"
+    val noexecCodeDelimiter = "```noexec"
 
     val acc = lines.foldLeft(Acc()) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
+        case `noexecCodeDelimiter` => acc.switchHandler(NoExec)
         case `codeDelimiter` => acc.switchHandler()
         case _ => acc.append(line)
       }
