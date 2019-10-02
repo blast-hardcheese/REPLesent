@@ -1542,4 +1542,24 @@ class REPLesentSpec extends FreeSpec {
       assert(slide4.output contains "*  3/3  *")
     }
   }
+
+  "Execution control" - {
+    "noexec" in {
+      val replesent = REPLesent(3, 3, testFile("noexec"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output contains "Syntax error!")
+      val slide1run = capture(replesent.run)
+      assert(slide1run.error === "No code for you")
+    }
+
+    "silent" in {
+      val replesent = REPLesent(3, 3, testFile("silent"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output !== "object Foo")
+      val slide1run = capture(replesent.run)
+      assert(slide1run.error === "No reference to REPL found. Please call with parameter intp=$intp")
+    }
+  }
 }
