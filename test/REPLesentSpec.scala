@@ -16,6 +16,14 @@
 import org.scalatest.FreeSpec
 
 class REPLesentSpec extends FreeSpec {
+  class CapturingInterp extends REPLesent.Interpreter {
+    override def toString(): String = s"CapturingInterp(${allCode})"
+    var allCode: List[String] = Nil
+    def code: String = allCode.mkString("\n")
+    def interpret(code: String): Unit = {
+      allCode = allCode :+ code
+    }
+  }
   case class Capture[A](result: A, output: String, error: String)
 
   def capture[A](f: => A): Capture[A] = {
@@ -1545,7 +1553,8 @@ class REPLesentSpec extends FreeSpec {
 
   "Execution control" - {
     "noexec" in {
-      val replesent = REPLesent(3, 3, testFile("noexec"))
+      val intp = new CapturingInterp
+      val replesent = REPLesent(3, 3, testFile("noexec"), intp=intp)
 
       val slide1 = capture(replesent.first)
       assert(slide1.output contains "Syntax error!")
@@ -1554,12 +1563,15 @@ class REPLesentSpec extends FreeSpec {
     }
 
     "silent" in {
-      val replesent = REPLesent(3, 3, testFile("silent"))
+      val intp = new CapturingInterp
+      val replesent = REPLesent(3, 3, testFile("silent"), intp=intp)
 
       val slide1 = capture(replesent.first)
-      assert(slide1.output !== "object Foo")
+      assert(!(slide1.output contains "object Foo"))
       val slide1run = capture(replesent.run)
-      assert(slide1run.error === "No reference to REPL found. Please call with parameter intp=$intp")
+      assert(intp.code === "object Foo")
+      assert(slide1run.output.diff(Seq("*", " ")).isEmpty)
+      assert(slide1run.error.isEmpty)
     }
   }
 }

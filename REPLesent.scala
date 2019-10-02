@@ -13,6 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+object REPLesent {
+  import scala.language.implicitConversions
+  trait Interpreter {
+    def interpret(code: String): Unit
+  }
+
+  object Interpreter {
+    object dummy extends Interpreter {
+      def interpret(code: String): Unit = Console.err.print(s"No reference to REPL found. Please call with parameter intp=$$intp")
+    }
+
+    implicit def apply(intp: scala.tools.nsc.interpreter.IMain): Interpreter = Option(intp).fold[Interpreter](dummy) { value =>
+      new Interpreter {
+        def interpret(code: String): Unit = {
+          val _ = intp.interpret(code)
+        }
+      }
+    }
+  }
+}
+
 case class REPLesent(
   width: Int = 0
 , height: Int = 0
@@ -20,7 +41,7 @@ case class REPLesent(
 , slideCounter: Boolean = false
 , slideTotal: Boolean = false
 , padNewline: Boolean = false
-, intp: scala.tools.nsc.interpreter.IMain = null
+, intp: REPLesent.Interpreter = REPLesent.Interpreter.dummy
 ) {
   import java.io.File
   import scala.util.matching.Regex
