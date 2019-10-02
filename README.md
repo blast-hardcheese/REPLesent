@@ -134,6 +134,8 @@ Separator | Description
 `---` | Separates slides
 `--` | Separates builds
 <code>```</code> | Delineates Scala code
+<code>```noexec</code> | Starts a code block that will not be run, only displayed
+<code>```silent</code> | Starts a code block that will not be displayed, only run
 
 ### Text alignment
 
