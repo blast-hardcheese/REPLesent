@@ -345,10 +345,10 @@ case class REPLesent(
     def runCode: Unit = {
       val code = currentSlide.code(buildCursor)
 
-      if (repl.isEmpty) {
-        Console.err.print(s"No reference to REPL found. Please call with parameter intp=$$intp")
-      } else if (code.isEmpty) {
+      if (code.isEmpty) {
         Console.err.print("No code for you")
+      } else if (repl.isEmpty) {
+        Console.err.print(s"No reference to REPL found. Please call with parameter intp=$$intp")
       } else {
         repl foreach (_.interpret(code))
       }
